@@ -5028,25 +5028,11 @@
           </div>
         </div>`;
       } else {
-        const within6h    = isWithin6Hours(record);
-        const sentAlready = isReminderSent(record.id);
-        const reminderBtn = (within6h && !sentAlready)
-          ? `<button class="appt-card-btn agenda-action-btn reminder"
-               style="flex:none;width:36px;padding:0;"
-               title="إرسال تذكير بالموعد"
-               onclick='sendWhatsAppReminder(${JSON.stringify(record).replace(/'/g,"\\'")},this)'>
-               ${ICON.bell}
-             </button>`
-          : '';
-        const dueBadge = (within6h && !sentAlready)
-          ? `<span class="reminder-due-badge"><i class="fas fa-bell" style="font-size:.6rem;"></i> موعد قريب</span>`
-          : '';
-        return `<div class="appt-card ${within6h && !sentAlready ? 'reminder-due' : ''}" data-card-id="${record.id}">
+        return `<div class="appt-card" data-card-id="${record.id}">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
             <div>
               <p style="font-weight:700; font-size:1rem;">${escapeHtml(record.PatientName)}</p>
               <p style="font-size:.78rem; color:var(--primary); margin-top:3px;">${escapeHtml(record.Phone)}</p>
-              ${dueBadge}
             </div>
             <div style="display:flex; gap:6px;">
               <a href="tel:${phone}" class="action-btn-small call-btn" title="اتصال">${ICON.phone}</a>
@@ -5059,7 +5045,6 @@
             <p style="display:flex;align-items:center;gap:6px;"><span style="color:var(--primary);opacity:.7;">${ICON.clock}</span><span style="color:var(--text-muted);">الوقت:</span> <strong>${slot}</strong></p>
           </div>
           <div style="display:flex; gap:8px; margin-top:14px;">
-            ${reminderBtn}
             <button class="appt-card-btn appt-card-btn--details" onclick="openModalById('${record.id}')">${ICON.eye} تفاصيل</button>
             <button class="appt-card-btn appt-card-btn--cancel" onclick="cancelAppointment('${record.id}')">${ICON.trash} إلغاء</button>
           </div>
@@ -5330,12 +5315,17 @@
       var brandHtml = '<div class="brand-emblem">' + emblem + '</div><div class="brand-text"><span class="b1">Doc</span><span class="b2">Book</span></div>';
       var css = '@page{size:A4;margin:0;}'
         + '*{font-family:Cairo,Tajawal,Arial,sans-serif;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
-        + 'html,body{margin:0;padding:0;}'
-        + '.sheet{position:relative;width:210mm;min-height:296mm;margin:0 auto;background:#fff;overflow:hidden;}'
-        + '.wt,.wb{position:absolute;left:0;width:100%;height:150px;display:block;} .wt{top:0;} .wb{bottom:0;}'
-        + '.pill{position:absolute;top:30px;right:46px;z-index:5;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.85);color:#fff;border-radius:30px;padding:7px 18px 7px 8px;font-weight:800;font-size:15px;}'
+        + 'html,body{margin:0;padding:0;background:#fff;}'
+        + '.wt,.wb{position:fixed;left:0;width:100%;height:150px;z-index:0;} .wt{top:0;} .wb{bottom:0;}'
+        + '.pill{position:fixed;top:30px;right:46px;z-index:6;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.85);color:#fff;border-radius:30px;padding:7px 18px 7px 8px;font-weight:800;font-size:15px;}'
         + '.pill .pc{width:24px;height:24px;border-radius:50%;background:#fff;color:#0d9488;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;}'
-        + '.content{position:relative;z-index:3;padding:170px 46px 0;}'
+        + '.watermark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:300px;height:300px;opacity:.06;z-index:0;}'
+        + '.contact{position:fixed;bottom:46px;left:0;width:100%;z-index:6;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:18px;color:#fff;font-size:12.5px;font-weight:600;padding:0 30px;}'
+        + '.contact .ct b{font-weight:800;} .contact .sep{opacity:.55;}'
+        + '.page{width:100%;border-collapse:collapse;}'
+        + '.page>thead>tr>td,.page>tfoot>tr>td,.page>tbody>tr>td{border:none;padding:0;vertical-align:top;}'
+        + '.head-space{height:158px;} .foot-space{height:160px;}'
+        + '.content{position:relative;z-index:3;padding:0 46px;}'
         + '.head{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:6px;}'
         + '.docinfo{text-align:right;min-width:0;}'
         + '.dname{font-size:30px;font-weight:900;color:#0f766e;line-height:1.1;}'
@@ -5345,17 +5335,15 @@
         + '.brand-text{font-weight:900;font-size:26px;letter-spacing:-.5px;line-height:1;} .brand-text .b1{color:#115e59;} .brand-text .b2{color:#0d9488;}'
         + '.divider{height:1.5px;background:#e2e8f0;margin:10px 0 22px;}'
         + '.sec-title{font-size:15px;font-weight:800;color:#0f766e;margin:18px 0 10px;}'
-        + '.info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px;}'
+        + '.info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px;break-inside:avoid;}'
         + '.info-cell{border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 12px;}'
         + '.info-cell.full{grid-column:1/-1;}'
         + '.info-cell .k{font-size:11.5px;color:#64748b;font-weight:600;margin-bottom:3px;}'
         + '.info-cell .vv{font-size:14px;color:#0f172a;font-weight:700;word-break:break-word;}'
-        + 'table{width:100%;border-collapse:collapse;font-size:13.5px;}'
-        + 'th,td{border:1px solid #e2e8f0;padding:9px 10px;text-align:right;}'
-        + 'th{background:#f0fdfa;color:#0f766e;font-weight:800;}'
-        + '.watermark{position:absolute;top:54%;left:50%;transform:translate(-50%,-50%);width:300px;height:300px;opacity:.06;z-index:1;}'
-        + '.contact{position:absolute;bottom:46px;left:0;width:100%;z-index:5;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:18px;color:#fff;font-size:12.5px;font-weight:600;padding:0 30px;}'
-        + '.contact .ct b{font-weight:800;} .contact .sep{opacity:.55;}';
+        + '.atbl{width:100%;border-collapse:collapse;font-size:13.5px;}'
+        + '.atbl th,.atbl td{border:1px solid #e2e8f0;padding:9px 10px;text-align:right;}'
+        + '.atbl th{background:#f0fdfa;color:#0f766e;font-weight:800;}'
+        + '.atbl thead{display:table-header-group;} .atbl tr{break-inside:avoid;}';
       var waveTop = '<svg class="wt" viewBox="0 0 1000 200" preserveAspectRatio="none"><path d="M0,0 H1000 V120 C835,200 700,150 500,162 C320,172 165,200 0,150 Z" fill="#0d9488"/><path d="M0,0 H1000 V92 C800,158 660,112 480,130 C300,148 150,150 0,122 Z" fill="#3bbcae" opacity="0.5"/></svg>';
       var waveBot = '<svg class="wb" viewBox="0 0 1000 200" preserveAspectRatio="none"><path d="M0,200 H1000 V92 C820,18 690,72 500,56 C320,40 160,12 0,72 Z" fill="#0d9488"/><path d="M0,200 H1000 V122 C800,58 650,102 470,86 C300,72 150,80 0,112 Z" fill="#3bbcae" opacity="0.5"/></svg>';
       var cps = [];
@@ -5370,12 +5358,14 @@
         + '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
         + '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">'
         + '<style>' + css + '</style></head><body>'
-        + '<div class="sheet">' + waveTop + waveBot
-          + '<div class="pill"><span class="pc">+</span> ' + pillText + '</div>'
-          + '<div class="watermark">' + emblem + '</div>'
-          + '<div class="content">' + head + innerHtml + '</div>'
-          + (contactHtml ? '<div class="contact">' + contactHtml + '</div>' : '')
-        + '</div></body></html>';
+        + waveTop + waveBot
+        + '<div class="pill"><span class="pc">+</span> ' + pillText + '</div>'
+        + '<div class="watermark">' + emblem + '</div>'
+        + (contactHtml ? '<div class="contact">' + contactHtml + '</div>' : '')
+        + '<table class="page"><thead><tr><td><div class="head-space"></div></td></tr></thead>'
+        + '<tfoot><tr><td><div class="foot-space"></div></td></tr></tfoot>'
+        + '<tbody><tr><td><div class="content">' + head + innerHtml + '</div></td></tr></tbody></table>'
+        + '</body></html>';
       _doPrint(html);
     }
 
@@ -5395,7 +5385,7 @@
       const visits = (p.appointments || []).slice().sort(function(a, b){ return (a.date || '').localeCompare(b.date || ''); });
       let rows = visits.map(function(v, i){ return '<tr><td>' + (i + 1) + '</td><td>' + escapeHtml(v.visitType || '-') + '</td><td>' + formatDateAr(v.date) + '</td><td>' + slotTimeOf(v) + '</td></tr>'; }).join('');
       if (!rows) rows = '<tr><td colspan="4" style="text-align:center;color:#64748b;">لا توجد زيارات</td></tr>';
-      const archive = '<div class="sec-title">أرشيف الزيارات</div><table><thead><tr><th style="width:42px;">#</th><th>نوع الزيارة</th><th>التاريخ</th><th>الوقت</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      const archive = '<div class="sec-title">أرشيف الزيارات</div><table class="atbl"><thead><tr><th style="width:42px;">#</th><th>نوع الزيارة</th><th>التاريخ</th><th>الوقت</th></tr></thead><tbody>' + rows + '</tbody></table>';
       _printSheet('إضبارة المريض', info + archive);
     };
 
